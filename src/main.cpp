@@ -2,6 +2,7 @@
 #include <vector>
 #include <bitset>
 #include <array>
+#include <iomanip>
 
 void toBinary(std::string& in, std::vector<uint8_t>& out)
 {
@@ -30,25 +31,22 @@ void pad(std::vector<uint8_t>& in)
 
 std::array<uint32_t, 8> computeHashValues()
 {
-    //iprastai naudojama sha256 pirmi 8 prime numeriai: 2, 3, 5, 7, 11, 13, 17, 19
-    //cia naudosiu 9 - 17: 23, 29, 31, 37, 41, 43, 53, 59
-    std::array<uint32_t, 8> arr;
-    
-    arr[0] = 2; //23 pakeist
-    arr[1] = 29; 
-    arr[2] = 31;
-    arr[3] = 37; 
-    arr[4] = 41;
-    arr[5] = 43;
-    arr[6] = 53; 
-    arr[7] = 59;
+    //iprastai naudojama sha256 pirmi 8 prime numeriai: 2 - 9
+    //cia naudosiu 9 - 17: 23 - 59
+    const std::array<double, 8> primes = {23, 29, 31, 37, 41, 43, 47, 53};
 
-    for(std::size_t i = 0; i < arr.size(); i++)
+    std::array<uint32_t, 8> hash;
+
+    for (std::size_t i = 0; i < primes.size(); i++)
     {
-        arr[i] = sqrt(arr[i]);
-        std::cout << arr[i];
+        double intPart;
+        double frac = std::modf(std::sqrt(primes[i]), &intPart);
+
+       
+        hash[i] = static_cast<uint32_t>(std::floor(frac * 4294967296.0));
     }
 
+    return hash;
 }
 
 
@@ -62,9 +60,5 @@ int main()
     pad(v);
 
     for(auto x : v)
-        std::cout << std::bitset<8>(x) << std::endl;
-
-    for(auto x : hashValues)
-        std::cout << x << std::endl;
-    
+        std::cout << std::bitset<8>(x) << std::endl;    
 }
