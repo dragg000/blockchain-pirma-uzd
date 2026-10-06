@@ -78,19 +78,28 @@ std::array<uint32_t, 64> computeRoundConstants()
 }
 
 
+inline uint32_t rotl(uint32_t x, int n) { return (x << n) | (x >> (32 - n));}
+
+inline uint32_t xnor(uint32_t x, uint32_t y){ return ~(x ^ y); }
+
+inline uint32_t rotr(uint32_t x, int n) { return (x >> n) | (x << (32 - n)); }
+
 uint32_t sigmaZero(uint32_t messageBlock) //input 4 byte block
 {
     uint32_t a = messageBlock;
     uint32_t b = messageBlock;
     uint32_t c = messageBlock;
     //left rotate 7 times
+    a = rotl(a, 7);
 
     //left rotate 13 times
+    b = rotl(b, 13);
 
     //left shift 5 times
+    c = c << 5;
 
     //XNOR (ekvivalencija)
-    uint32_t result = 0;
+    uint32_t result = xnor(xnor(a, b), c);
     return result;
 }
 
@@ -101,16 +110,20 @@ uint32_t sigmaOne(uint32_t messageBlock)
     uint32_t b = messageBlock;
     uint32_t c = messageBlock;  
 //right rotate 8 times
+    a = rotr(a, 8);
 
 //right rotate 19 times
+    b = rotr(b, 19);
 
 //right shift 5
+    c = c >> 5;
 
 //XOR naudojamas
-    uint32_t result = 0;
+    uint32_t result = a ^ b ^ c;
     return result;
 }
-void messageSchedule(std::vector<uint8_t>& vec, int blockCount)
+
+std::vector<uint32_t> messageSchedule(std::vector<uint8_t>& vec, int blockCount)
 {
     //suskirtsom zinute i message blocks M - po 32 bitus
     std::vector<uint32_t> messageBlocks(blockCount * 16);
@@ -118,45 +131,85 @@ void messageSchedule(std::vector<uint8_t>& vec, int blockCount)
     for (std::size_t i = 0; i < messageBlocks.size(); i++)
     {
         messageBlocks[i] = (uint32_t(vec[4 * i])     << 24) |
-                       (uint32_t(vec[4 * i + 1]) << 16) |
-                       (uint32_t(vec[4 * i + 2]) << 8)  |
-                        uint32_t(vec[4 * i + 3]);
+                           (uint32_t(vec[4 * i + 1]) << 16) |
+                           (uint32_t(vec[4 * i + 2]) << 8)  |
+                            uint32_t(vec[4 * i + 3]);
     }
-
 
     //pakeiciau sigma0 ir sigma1 funkcijas
     //Wt = sigmaOne(Wt-2) + Wt-7 + sigmaZero(Wt-15) + Wt-16 - sha256 formula
     //mano Wt = sigmaOne(Wt-3) + Wt-4 + sigmaZero(Wt-10) + Wt-16 - mano formula
-    for(int i = 0; i < blockCount; i++)
-    {
+    std::vector<uint32_t> W(blockCount * 64);
 
+    for (int i = 0; i < blockCount; i++)
+    {
+        uint32_t* w = &W[i * 64];
+        const uint32_t* m = &messageBlocks[i * 16];
+
+        // first 16 words are the raw message block
+        for (int t = 0; t < 16; t++)
+            w[t] = m[t];
+
+        // expand 16 -> 64 words
+        for (int t = 16; t < 64; t++)
+            w[t] = sigmaOne(w[t - 3]) + w[t - 4] + sigmaZero(w[t - 10]) + w[t - 16];
     }
-}   
+
+    return W;
+}
 
 uint32_t choose(uint32_t a, uint32_t b, uint32_t c, uint32_t e, uint32_t f, uint32_t g)
 {
-    //5 inputai
-    for(std::size_t i = 0; i < 32; i++)
+    //6 inputai
+    uint32_t result = 0;
+
+    for (std::size_t i = 0; i < 32; i++)
     {
-        if(i % 2 == 0)
+        uint32_t x, y, z;
+
+        if (i % 2 == 0)
         {
             //a, b, c naudot choose'ui
+            x = (a >> i) & 1;
+            y = (b >> i) & 1;
+            z = (c >> i) & 1;
         }
         else
         {
             //e, f, g naudoti
-
+            x = (e >> i) & 1;
+            y = (f >> i) & 1;
+            z = (g >> i) & 1;
         }
-    }   
+
+        // Ch on single bits: x picks y if x = 1, otherwise z
+        uint32_t bit = ((x & y) ^ (~x & z)) & 1;
+
+        result |= bit << i;
+    }
+
+    return result;
 }
 
-uint32_t majority(uint32_t a, uint32_t b, uint32_t c, uint32_t e, uint32_t f, uint32_t g)
+uint32_t majority(uint32_t a, uint32_t b, uint32_t c, uint32_t e, uint32_t f)
 {
     //majority is 5 inputu
+    uint32_t result = 0;
+
+    for (std::size_t i = 0; i < 32; i++)
+    {
+        uint32_t count = ((a >> i) & 1) + ((b >> i) & 1) + ((c >> i) & 1)
+                        + ((e >> i) & 1) + ((f >> i) & 1);
+
+        uint32_t bit = (count >= 3) ? 1 : 0;
+        result |= bit << i;
+    }
+
+    return result;
 }
 void compression(std::vector<uint8_t>& vec)
 {
-
+    // T1
 }
 
 
