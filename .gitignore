@@ -2,3 +2,5 @@ src/main
 src/program
 src/main.dSYM/
 build/
+__pycache__/
+*.py[cod]
