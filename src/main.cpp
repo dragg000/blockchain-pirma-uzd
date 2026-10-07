@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <bit>
 
-void toBinary(std::string& in, std::vector<uint8_t>& out)
+void toBinary(const std::string& in, std::vector<uint8_t>& out)
 {
     for (std::size_t i = 0; i < in.size(); ++i)
     {
@@ -83,6 +83,11 @@ inline uint32_t rotl(uint32_t x, int n) { return (x << n) | (x >> (32 - n));}
 inline uint32_t xnor(uint32_t x, uint32_t y){ return ~(x ^ y); }
 
 inline uint32_t rotr(uint32_t x, int n) { return (x >> n) | (x << (32 - n)); }
+
+inline uint32_t bigSigmaZero(uint32_t x) { return rotl(x, 3) ^ rotl(x, 14) ^ rotl(x, 25); }
+
+inline uint32_t bigSigmaOne(uint32_t x) { return rotl(x, 5) ^ rotl(x, 11) ^ rotl(x, 27); }
+
 
 uint32_t sigmaZero(uint32_t messageBlock) //input 4 byte block
 {
@@ -207,34 +212,85 @@ uint32_t majority(uint32_t a, uint32_t b, uint32_t c, uint32_t e, uint32_t f)
 
     return result;
 }
-void compression(std::vector<uint8_t>& vec)
+
+std::array<uint32_t, 8> compression(const std::vector<uint32_t>& W, int blockCount)
 {
-    // T1
+    std::array<uint32_t, 8> H = computeHashValues();
+    const std::array<uint32_t, 64> K = computeRoundConstants();
+
+    for (int blk = 0; blk < blockCount; blk++)
+    {
+        const uint32_t* w = &W[blk * 64];
+
+        // working variables start from the current state
+        uint32_t a = H[0], b = H[1], c = H[2], d = H[3];
+        uint32_t e = H[4], f = H[5], g = H[6], h = H[7];
+
+        for (int t = 0; t < 64; t++)
+        {
+            // T1
+            uint32_t T1 = h + bigSigmaOne(e) + choose(a, b, c, e, f, g) + K[t] + w[t];
+
+            // T2
+            uint32_t T2 = bigSigmaZero(a) + majority(a, b, c, d, e);
+
+            // shift the registers; only a and e get new values
+            h = g;
+            g = f;
+            f = e;
+            e = d + T1;
+            d = c;
+            c = b;
+            b = a;
+            a = T1 + T2;
+        }
+
+        // feed-forward: add the working variables back into the state
+        H[0] += a; H[1] += b; H[2] += c; H[3] += d;
+        H[4] += e; H[5] += f; H[6] += g; H[7] += h;
+    }
+
+    return H;
 }
 
 
 
 //final hash
-std::vector<uint8_t> hash(std::string& input)
+std::vector<uint8_t> hash(const std::string& input)
 {
+    std::vector<uint8_t> bytes;
+    toBinary(input, bytes);
+    pad(bytes);
+
+    int blockCount = static_cast<int>(bytes.size() / 64);
+
+    std::vector<uint32_t> W = messageSchedule(bytes, blockCount);
+    std::array<uint32_t, 8> H = compression(W, blockCount);
+
+    // state words -> 32 bytes, big-endian (same order as you read the input)
+    std::vector<uint8_t> digest;
+    digest.reserve(32);
+
+    for (uint32_t word : H)
+    {
+        digest.push_back(static_cast<uint8_t>(word >> 24));
+        digest.push_back(static_cast<uint8_t>(word >> 16));
+        digest.push_back(static_cast<uint8_t>(word >> 8));
+        digest.push_back(static_cast<uint8_t>(word));
+    }
+
+    return digest;
 
 }
 
 int main()
 {
-    /*
-    TODO
-    Add CIN input
 
-    */
-    std::string input = "aaaaaaaaaaaaaaaaaasardrydtfyguguguifyfyhftffhdjnajdnjandjnsajdnasjdajsdnjasdnjsandjasjdnasjdasojdjaosjdahdiojaidjasidjaidohfiofiwdiadpi3qidqpidaisjdiqjdi2dioasdioqjdoajdsodiapwjdiasjdikjwidjaskdnijdijaijediqgyffyfiftfytoftorftftftfotuftoftuftuftftufuyfyfgfyyuut";
-    std::vector<uint8_t> v;
-    int blockCount = v.size() / 64;
-    std::array<uint32_t, 8> hashValues = computeHashValues(); //tik 8 hash values
+    std::vector<uint8_t> d = hash("hello");
 
-    toBinary(input, v);
-    pad(v);
+    for (uint8_t byte : d)
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << int(byte);
+    std::cout << '\n';
 
-    for(auto x : v)
-        std::cout << std::bitset<8>(x) << std::endl;    
+    return 0;
 }
