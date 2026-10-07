@@ -1,0 +1,12 @@
+Eksperimentų data: 2026-10-07
+Sistema: macOS Darwin 25.6.0 arm64
+Kompiliatorius: Apple clang version 17.0.0
+Python: 3.13.7
+Maišos kompiliavimo parinktys: -std=c++20 -O2 -Wall -Wextra -pedantic
+Seed: 20261007
+ASCII abėcėlė: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,;:!?-_
+Maišos išvestis: 256 bitai, 32 baitai, 64 mažosios hex raidės
+Spartos matavimai: 3 apšilimo kvietimai, 5 matavimai, steady_clock, mikrosekundės
+Kolizijos: 100000 skirtingų porų kiekvienam ilgiui 10, 100, 500, 1000
+Lavinos efektas: 100000 porų, po 25000 kiekvienam ilgiui
+Spėjimas: kandidatai 0000-9999, vieša druska VU-2026
