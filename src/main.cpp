@@ -35,9 +35,7 @@ void pad(std::vector<uint8_t>& in)
 
 std::array<uint32_t, 8> computeHashValues()
 {
-    // Paprastai SHA-256 naudoja pirmuosius 8 pirminius skaicius: 2-19
-    // Cia naudojami kiti pirminiai skaiciai: 23-53
-    const std::array<double, 8> primes = {23, 29, 31, 37, 41, 43, 47, 53};
+    const std::array<double, 8> primes = {59, 61, 67, 71, 73, 79, 83, 89};
 
     std::array<uint32_t, 8> hash;
 
@@ -85,9 +83,15 @@ inline uint32_t xnor(uint32_t x, uint32_t y){ return ~(x ^ y); }
 
 inline uint32_t rotr(uint32_t x, int n) { return (x >> n) | (x << (32 - n)); }
 
-inline uint32_t bigSigmaZero(uint32_t x) { return rotl(x, 3) ^ rotl(x, 14) ^ rotl(x, 25); }
+inline uint32_t bigSigmaZero(uint32_t x)
+{
+    return rotr(x, 2) ^ rotl(x, 13) ^ rotr(x, 22);
+}
 
-inline uint32_t bigSigmaOne(uint32_t x) { return rotl(x, 5) ^ rotl(x, 11) ^ rotl(x, 27); }
+inline uint32_t bigSigmaOne(uint32_t x)
+{
+    return rotr(x, 6) ^ rotl(x, 11) ^ rotr(x, 25);
+}
 
 
 uint32_t sigmaZero(uint32_t messageBlock)
@@ -102,7 +106,7 @@ uint32_t sigmaZero(uint32_t messageBlock)
     c = c << 5;
 
     //XNOR (ekvivalencija)
-    uint32_t result = xnor(xnor(a, b), c);
+    uint32_t result = xnor(xnor(a, b), c) ^ rotr(messageBlock, 3);
     return result;
 }
 
@@ -118,7 +122,7 @@ uint32_t sigmaOne(uint32_t messageBlock)
     c = c >> 5;
 
 //XOR naudojamas
-    uint32_t result = a ^ b ^ c;
+    uint32_t result = a ^ b ^ c ^ rotl(messageBlock, 17);
     return result;
 }
 
@@ -135,8 +139,7 @@ std::vector<uint32_t> messageSchedule(std::vector<uint8_t>& vec, int blockCount)
                             uint32_t(vec[4 * i + 3]);
     }
 
-    // Pakeistos sigma0 ir sigma1 funkcijos
-    // Wt = sigmaOne(Wt-3) + Wt-4 + sigmaZero(Wt-10) + Wt-16
+    // Wt = sigmaOne(Wt-2) + Wt-7 + sigmaZero(Wt-15) + Wt-16
     std::vector<uint32_t> W(blockCount * 64);
 
     for (int i = 0; i < blockCount; i++)
@@ -148,7 +151,7 @@ std::vector<uint32_t> messageSchedule(std::vector<uint8_t>& vec, int blockCount)
             w[t] = m[t];
 
         for (int t = 16; t < 64; t++)
-            w[t] = sigmaOne(w[t - 3]) + w[t - 4] + sigmaZero(w[t - 10]) + w[t - 16];
+            w[t] = sigmaOne(w[t - 2]) + w[t - 7] + sigmaZero(w[t - 15]) + w[t - 16];
     }
 
     return W;
@@ -186,7 +189,7 @@ uint32_t choose(uint32_t a, uint32_t b, uint32_t c, uint32_t e, uint32_t f, uint
     return result;
 }
 
-uint32_t majority(uint32_t a, uint32_t b, uint32_t c, uint32_t e, uint32_t f)
+uint32_t majority(uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e)
 {
     // Daugumos funkcijai naudojami 5 argumentai
     uint32_t result = 0;
@@ -194,7 +197,7 @@ uint32_t majority(uint32_t a, uint32_t b, uint32_t c, uint32_t e, uint32_t f)
     for (std::size_t i = 0; i < 32; i++)
     {
         uint32_t count = ((a >> i) & 1) + ((b >> i) & 1) + ((c >> i) & 1)
-                        + ((e >> i) & 1) + ((f >> i) & 1);
+                        + ((d >> i) & 1) + ((e >> i) & 1);
 
         uint32_t bit = (count >= 3) ? 1 : 0;
         result |= bit << i;

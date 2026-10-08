@@ -145,12 +145,20 @@ python3 experiments/compare_versions.py
 
 ## C. `v0.11` – patobulinta mano versija
 
-`v0.11` yra patobulinta `v0.1` versija, o ne DI asistuotos `main` šakos
-pakeitimas. Pati maišymo konstrukcija išsaugota, kad palyginimas parodytų
-įvesties ir programos sąsajos patobulinimų, o ne kito algoritmo, poveikį.
+`v0.11` yra DI asistuota `v0.1` algoritmo patobulinta versija. `v0.1` išlieka
+nepakeistas kaip mano savarankiškas atskaitos taškas, o ši šaka aiškiai
+atskiria AI pasiūlytus maišos funkcijos pakeitimus.
 
 Palyginti su `v0.1`, `v0.11`:
 
+- pakeičia pradinių būsenos žodžių rinkinius į naują pirminių skaičių rinkinį;
+- pakeičia `bigSigmaZero` ir `bigSigmaOne` rotacijų kombinacijas;
+- sustiprina `sigmaZero` ir `sigmaOne`, papildydama jas papildomomis
+  rotacijomis;
+- pakeičia žodžių išplėtimą į
+  `sigmaOne(W[t-2]) + W[t-7] + sigmaZero(W[t-15]) + W[t-16]`;
+- pataiso penkių įvesčių `majority` pavadinimus ir tiksliai dokumentuoja,
+  kad naudojami `a,b,c,d,e`;
 - nebehashina visada tik `"hello"`, o priima `--text`, `--file` ir `--stdin`;
 - failus skaito dvejetainiu režimu, todėl nekeičiami jų baitai;
 - tikrina neteisingą režimą ir neperskaitomą failą, grąžindama aiškią klaidą;
@@ -164,14 +172,12 @@ skaičiuotas nuo 256 bitų.
 
 | Versija | Įvesčių skaičius | Vid. laikas (µs) | Lavinos efektas bitais (vid.) | Hex skirtumas (vid.) |
 |---|---:|---:|---:|---:|
-| `v0.1` | 1000 | 33.947 | 49.900% | 93.778% |
-| `v0.11` | 1000 | 32.214 | 49.900% | 93.778% |
+| `v0.1` | 1000 | 34.941 | 49.900% | 93.778% |
+| `v0.11` | 1000 | 34.235 | 49.977% | 93.906% |
 
 Pilni skaičiavimai pateikti faile
 [`results/v01_v011_comparison.csv`](results/v01_v011_comparison.csv), o juos
-atkartoja `python3 experiments/compare_versions.py`. Eksperimentų metu abiejų
-versijų maišymo rezultatai sutapo, nes `v0.11` keičia sąsają ir įvesties
-apdorojimą, bet nekeičia `v0.1` maišymo formulės.
+atkartoja `python3 experiments/compare_versions.py`.
 
 ### `v0.1` ir `v0.11` grafikai
 
