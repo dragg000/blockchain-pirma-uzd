@@ -236,6 +236,9 @@ poroje pakeistas vienas ASCII simbolis kitu tos pačios abėcėlės simboliu.
 Vidutinis bitų skirtumas yra apie 50 %, o hex simbolių skirtumas – apie
 93,75 %. Tai atitinka orientacines nepriklausomų atsitiktinių išvesčių
 reikšmes. Bitų skirtumo histograma pateikta
+![Lavinos efekto bitų histograma](results/avalanche_histogram.svg)
+
+Žali histogramo duomenys pateikti
 [`results/avalanche_histogram.csv`](results/avalanche_histogram.csv), o visos
 statistikos – [`results/avalanche.csv`](results/avalanche.csv).
 
@@ -259,8 +262,11 @@ nėra tiesiogiai lygintini su ankstesne lentelės versija.
 | 87 040 | 1 024 | 6 960.150 | 6 809.958 | 7 087.083 |
 | 174 080 | 2 048 | 12 746.400 | 12 401.417 | 13 133.166 |
 
-Pilna lentelė pateikta [`results/benchmark.csv`](results/benchmark.csv), o
-grafikas – [`results/benchmark.svg`](results/benchmark.svg). Didėjant įvesties
+Pilna lentelė pateikta [`results/benchmark.csv`](results/benchmark.csv).
+
+![Maišos skaičiavimo sparta](results/benchmark.svg)
+
+Didėjant įvesties
 dydžiui laikas auga beveik tiesiškai, nes didėja apdorojamų 64 baitų blokų
 skaičius. Mažų įvesčių matavimus labiau veikia pastovios funkcijos sąnaudos.
 
@@ -305,6 +311,7 @@ Visi pradiniai matavimai, statistikos ir grafikas laikomi repozitorijoje:
 - [`results/collisions.csv`](results/collisions.csv)
 - [`results/avalanche.csv`](results/avalanche.csv)
 - [`results/avalanche_histogram.csv`](results/avalanche_histogram.csv)
+- [`results/avalanche_histogram.svg`](results/avalanche_histogram.svg)
 - [`results/preimage.csv`](results/preimage.csv)
 - [`results/metadata.txt`](results/metadata.txt)
 
