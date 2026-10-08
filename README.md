@@ -8,8 +8,6 @@ Algoritmas nėra skirtas realiam kriptografiniam naudojimui. Jis yra pedagoginio
 
 Hash funkcija transformuoja įvestį į fiksuoto ilgio išvestį, kuri priklauso tik nuo įvesties baitų sekos. Tokios funkcijos yra plačiai naudojamos įvairiuose taikymuose, tačiau jų kriptografinis saugumas vertinamas ne pagal greitį ar estetiką, bet pagal galimybę atlaikyti preimage, collision ir avalanche tipo analizę.
 
-Šiame projekte nagrinėjama savarankiškai sukurta konstrukcija, kurios pagrindinis tikslas yra ne „saugus“ kriptografinis sprendimas, o praktiškas ir mokymosi orientuotas modelis. Dėl to svarbu pabrėžti, kad tokio tipo algoritmas neturi būti naudojamas slaptažodžiams, kriptovaliutoms ar bet kokiai kritinės svarbos apsaugai.
-
 ## 2. Paleidimo instrukcijos
 
 ```bash
