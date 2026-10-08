@@ -1,13 +1,11 @@
 # Mokomasis maišos generatorius
 
-Šis failas aprašo dvi atskiras projekto versijas. Jų kodas, kūrimo būdas ir
-rezultatai nėra maišomi:
+Šis failas aprašo dvi projekto versijas ir jų palyginimą:
 
 - **`v0.1`** – mano savarankiškai sukurta versija, parengta be DI pagalbos.
-- **`main`** – atskira versija, kuriai buvo naudojama DI asistento pagalba.
+- **`v0.11`** – DI asistuotas mano `v0.1` algoritmo patobulinimas.
 
-Toliau pateiktas pirmasis skyrius aprašo mano `v0.1` versiją. DI asistuota
-`main` versija aprašyta atskirame skyriuje dokumento pabaigoje.
+Toliau aprašomi abu algoritmai ir jų eksperimentinis palyginimas.
 
 ## A. `v0.1` – mano savarankiškas darbas
 
@@ -189,77 +187,6 @@ atkartoja `python3 experiments/compare_versions.py`.
 
 ![v0.1 ir v0.11 lavinos efekto palyginimas](results/v01_v011_avalanche.svg)
 
-## B. `main` – DI asistuota versija
-
-Šis skyrius aprašo ne mano savarankišką `v0.1` darbą, o atskirą `main`
-šakos versiją, kuri buvo kuriama naudojant DI asistento pagalbą. `main`
-šakos `README.md` ir `src/main.cpp` yra šios versijos šaltiniai. Šių rezultatų
-negalima priskirti mano savarankiškai sukurtai `v0.1` versijai.
-
-### B.1. DI asistuotos versijos struktūra
-
-`main` versijoje įvestis papildoma `0x80`, nuliais ir 64 bitų ilgiu, tada
-apdorojama 64 baitų blokais. Ji naudoja kitokią nei `v0.1` būseną, pradines
-konstantas ir maišymo konstrukciją:
-
-- kiekvienas blokas paverčiamas į 16 žodžių mažosios baitų tvarkos formatu;
-- `mixBlock` atlieka 7 raundus po 8 vidinius atnaujinimus;
-- naudojamos rotacijos, XOR, sudėtis ir žodžių indeksavimo schemos;
-- galutinė būsena išvedama kaip 32 baitų, 256 bitų rezultatas.
-
-Tai yra DI asistuotos `main` versijos aprašas, o ne `v0.1` algoritmo
-paaiškinimas.
-
-### B.2. DI asistuotos versijos eksperimentai
-
-`main` versijai dokumentuoti buvo pateikti kolizijų, lavinos efekto, spartos
-ir kandidatų spėjimo eksperimentai. Ši versija taip pat buvo palyginta su MD5,
-SHA-1 ir SHA-256. Palyginimui naudotas tikslus
-`origin/main:src/main.cpp`, o ne `v0.1` šaltinis:
-
-| Algoritmas | Vid. laikas vienai maišai (µs) | Bitų skirtumas (vid.) | Hex skirtumas (vid.) |
-|---|---:|---:|---:|
-| `main` (DI) | 8.525 | 49.923% | 93.758% |
-| MD5 | 0.736 | 50.126% | 93.603% |
-| SHA-1 | 0.395 | 49.831% | 93.503% |
-| SHA-256 | 0.400 | 49.824% | 93.519% |
-
-Ši lentelė ir failai `results/standard_speed.csv` bei
-`results/standard_avalanche.csv` yra pažymėti kaip **DI asistuotos `main`
-versijos rezultatai**. Jie nėra mano savarankiškos `v0.1` versijos
-eksperimentų rezultatai.
-
-### B.3. Versijų palyginimas
-
-`v0.1` ir `main` nėra tas pats algoritmas:
-
-| Sritis | `v0.1` – mano darbas | `main` – DI asistuota versija |
-|---|---|---|
-| Kūrimas | Savarankiškai, be DI | Naudojant DI asistento pagalbą |
-| Pagrindinė konstrukcija | Pakeista SHA-256 struktūra | Atskirta `mixBlock` maišymo konstrukcija |
-| Išvestis | 256 bitai | 256 bitai |
-| Palyginimo rezultatai | Aprašyti A skyriuje | Aprašyti B.2 skyriuje |
-
-Šis atskyrimas leidžia aiškiai nurodyti, kurios idėjos, kodo dalys ir
-eksperimentai priklauso mano `v0.1`, o kurios buvo sukurtos DI asistuotoje
-`main` versijoje.
-
-Naudotos sąlygos:
-
-- sistema: macOS Darwin 25.6.0 arm64;
-- kompiliatorius: Apple clang 17.0.0;
-- Python: 3.13.7;
-- kompiliavimas: `-std=c++20 -O2 -Wall -Wextra -pedantic`;
-- atsitiktinių duomenų `seed`: `20261007`;
-- ASCII abėcėlė: `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,;:!?-_`;
-- spartos matavimai: 5 matavimai; įskaičiuotas vieno proceso paleidimas ir
-  standartinės įvesties perdavimas;
-- laikas matuojamas `steady_clock` mikrosekundėmis, neįtraukiant failo įvesties
-  ir konsolės išvesties.
-
-Visa ši informacija išsaugota faile
-[`results/metadata.txt`](results/metadata.txt).
-
 ### A.6. Eksperimentų rezultatai
 
 #### A.6.1. Įvesties ir išvesties patikra
@@ -368,34 +295,6 @@ rinkinyje. Realioms sistemoms turi būti naudojamos patikrintos kriptografinės
 konstrukcijos, o slaptažodžiams – specializuotos schemos, pavyzdžiui,
 `Argon2id`.
 
-#### A.6.7. DI versijos palyginimas su standartinėmis maišomis
-
-Papildomai `main` šakos DI versija palyginta su standartinėmis MD5, SHA-1 ir
-SHA-256 realizacijomis. Naudotas tikslus `origin/main:src/main.cpp`, todėl
-lyginama ne su `v0.1`, o su AI asistuota `main` realizacija. Visos keturios funkcijos gavo tas pačias 1 000 atsitiktinių
-ASCII įvesčių: po 250 įvesčių, kurių ilgis buvo 10, 100, 500 ir 1 000 baitų.
-Sparta matuota 5 kartus, o kiekvieno matavimo metu apdorotos visos įvestys.
-Lavinos efektui kiekvienoje poroje pakeistas vienas simbolis, o bitų skirtumas
-normalizuotas pagal konkrečios funkcijos išvesties ilgį.
-
-Rezultatai atkuriami:
-
-```bash
-python3 experiments/standard_compare.py
-```
-
-| Algoritmas | Išvestis | Vid. laikas vienai maišai (µs) | Bitų skirtumas (vid.) | Hex skirtumas (vid.) |
-|---|---:|---:|---:|---:|
-| main (DI) | 256 bitai | 8.525 | 49.923% | 93.758% |
-| MD5 | 128 bitų | 0.736 | 50.126% | 93.603% |
-| SHA-1 | 160 bitų | 0.395 | 49.831% | 93.503% |
-| SHA-256 | 256 bitai | 0.400 | 49.824% | 93.519% |
-
-Standartinės funkcijos skaičiuojamos Python `hashlib` bibliotekoje, o `main (DI)`
-skaičiuojama iš `origin/main:src/main.cpp` C++ realizacijos. Dėl skirtingų vykdymo aplinkų
-spartos skaičiai yra orientaciniai, todėl svarbiausia išlaikyta vienoda įvesčių
-imtis ir vienodas matavimų skaičius. Palyginimas neįrodo `v0.1` saugumo.
-
 ### A.7. Rezultatų atkūrimas
 
 Visi pradiniai matavimai, statistikos ir grafikas laikomi repozitorijoje:
@@ -407,8 +306,6 @@ Visi pradiniai matavimai, statistikos ir grafikas laikomi repozitorijoje:
 - [`results/avalanche.csv`](results/avalanche.csv)
 - [`results/avalanche_histogram.csv`](results/avalanche_histogram.csv)
 - [`results/preimage.csv`](results/preimage.csv)
-- [`results/standard_speed.csv`](results/standard_speed.csv)
-- [`results/standard_avalanche.csv`](results/standard_avalanche.csv)
 - [`results/metadata.txt`](results/metadata.txt)
 
 Šis pakartojimas apėmė 9 correctness įvesčių, 100 000 kolizijų porų kiekvienam

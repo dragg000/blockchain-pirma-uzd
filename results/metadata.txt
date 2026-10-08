@@ -11,6 +11,3 @@ proceso paleidimas ir standartinės įvesties perdavimas
 Kolizijos: 100000 skirtingų porų kiekvienam ilgiui 10, 100, 500, 1000
 Lavinos efektas: 100000 porų, po 25000 kiekvienam ilgiui
 Spėjimas: kandidatai 0000-9999, vieša druska VU-2026
-Standartų palyginimas: tikslus origin/main:src/main.cpp (DI versija), MD5, SHA-1 ir SHA-256
-Standartų palyginimo imtis: 1000 įvesčių, po 250 ilgiams 10, 100, 500 ir 1000 baitų
-Standartų palyginimo matavimai: 5 matavimai, vienas simbolis pakeistas lavinos porose
