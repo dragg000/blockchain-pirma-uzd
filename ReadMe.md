@@ -173,6 +173,16 @@ atkartoja `python3 experiments/compare_versions.py`. Eksperimentų metu abiejų
 versijų maišymo rezultatai sutapo, nes `v0.11` keičia sąsają ir įvesties
 apdorojimą, bet nekeičia `v0.1` maišymo formulės.
 
+### `v0.1` ir `v0.11` grafikai
+
+**Sparta:**
+
+![v0.1 ir v0.11 spartos palyginimas](results/v01_v011_speed.svg)
+
+**Lavinos efektas:**
+
+![v0.1 ir v0.11 lavinos efekto palyginimas](results/v01_v011_avalanche.svg)
+
 ## B. `main` – DI asistuota versija
 
 Šis skyrius aprašo ne mano savarankišką `v0.1` darbą, o atskirą `main`
