@@ -208,7 +208,7 @@ std::array<uint32_t, 8> compression(const std::vector<uint32_t>& W, int blockCou
     std::array<uint32_t, 8> H = computeHashValues();
     const std::array<uint32_t, 64> K = computeRoundConstants();
 
-    for (std::size_t blk = 0; blk < blockCount; blk++)
+    for (int blk = 0; blk < blockCount; blk++)
     {
         const uint32_t* w = &W[blk * 64];
 

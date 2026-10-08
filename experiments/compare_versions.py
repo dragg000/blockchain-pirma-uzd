@@ -41,7 +41,7 @@ def compile_versions():
     BUILD.mkdir(exist_ok=True)
     baseline = BUILD / "v01_source.cpp"
     baseline.write_bytes(subprocess.check_output(
-        ["git", "show", "v0.1:src/main.cpp"], cwd=ROOT))
+        ["git", "show", "refs/tags/v0.1:src/main.cpp"], cwd=ROOT))
     current = BUILD / "v011_source.cpp"
     current.write_text((ROOT / "src/main.cpp").read_text(), encoding="utf-8")
     make_wrapper(baseline, BUILD / "v01_hash", "v01")
