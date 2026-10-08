@@ -6,6 +6,11 @@
 #include <cmath>
 #include <cstdint>
 #include <bit>
+#include <fstream>
+#include <iterator>
+#include <stdexcept>
+#include <sstream>
+#include <cstring>
 
 void toBinary(const std::string& in, std::vector<uint8_t>& out)
 {
@@ -203,7 +208,7 @@ std::array<uint32_t, 8> compression(const std::vector<uint32_t>& W, int blockCou
     std::array<uint32_t, 8> H = computeHashValues();
     const std::array<uint32_t, 64> K = computeRoundConstants();
 
-    for (int blk = 0; blk < blockCount; blk++)
+    for (std::size_t blk = 0; blk < blockCount; blk++)
     {
         const uint32_t* w = &W[blk * 64];
 
@@ -261,14 +266,53 @@ std::vector<uint8_t> hash(const std::string& input)
 
 }
 
-int main()
+std::string toHex(const std::vector<uint8_t>& bytes)
 {
+    std::ostringstream output;
+    output << std::hex << std::setfill('0');
+    for (uint8_t byte : bytes)
+        output << std::setw(2) << static_cast<unsigned>(byte);
+    return output.str();
+}
 
-    std::vector<uint8_t> d = hash("hello");
+std::vector<uint8_t> readFile(const std::string& path)
+{
+    std::ifstream file(path, std::ios::binary);
+    if (!file)
+        throw std::runtime_error("Nepavyko atidaryti failo: " + path);
+    return std::vector<uint8_t>(std::istreambuf_iterator<char>(file), {});
+}
 
-    for (uint8_t byte : d)
-        std::cout << std::hex << std::setw(2) << std::setfill('0') << int(byte);
-    std::cout << '\n';
+std::vector<uint8_t> readStdin()
+{
+    return std::vector<uint8_t>(std::istreambuf_iterator<char>(std::cin), {});
+}
+
+int main(int argc, char* argv[])
+{
+    try
+    {
+        std::vector<uint8_t> input;
+        if (argc == 3 && std::string(argv[1]) == "--text")
+            input.assign(argv[2], argv[2] + std::strlen(argv[2]));
+        else if (argc == 3 && std::string(argv[1]) == "--file")
+            input = readFile(argv[2]);
+        else if (argc == 2 && std::string(argv[1]) == "--stdin")
+            input = readStdin();
+        else
+        {
+            std::cerr << "Naudojimas: --text TEKSTAS | --file KELIAS | --stdin\n";
+            return 2;
+        }
+
+        std::string text(input.begin(), input.end());
+        std::cout << toHex(hash(text)) << '\n';
+    }
+    catch (const std::exception& error)
+    {
+        std::cerr << "Klaida: " << error.what() << '\n';
+        return 1;
+    }
 
     return 0;
 }

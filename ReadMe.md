@@ -1,18 +1,21 @@
 # Mokomasis maišos generatorius
 
-Šis projektas yra Vilniaus universiteto blokų grandinių technologijų pirmosios
-užduoties realizacija. Programa apskaičiuoja savarankiškai pakeistos mokomosios
-maišos funkcijos reikšmę ir leidžia ištirti jos elgseną pagal įvesties pokyčius,
-kolizijų paiešką, lavinos efektą, veikimo spartą ir kandidatų perrinkimą.
+Šis failas aprašo dvi atskiras projekto versijas. Jų kodas, kūrimo būdas ir
+rezultatai nėra maišomi:
 
-Ši `v0.1` versija sukurta savarankiškai, be DI pagalbos. Algoritmo kūrimas
-pradėtas nuo SHA-256 struktūros nukopijavimo, o vėliau jo komponentai buvo
-keičiami ir pritaikomi savam algoritmui.
+- **`v0.1`** – mano savarankiškai sukurta versija, parengta be DI pagalbos.
+- **`main`** – atskira versija, kuriai buvo naudojama DI asistento pagalba.
 
-Tai nėra patikrinta kriptografinė funkcija. Programa neturi būti naudojama
-slaptažodžiams, kriptovaliutoms, pinigams ar kitoms realioms saugumo sistemoms.
+Toliau pateiktas pirmasis skyrius aprašo mano `v0.1` versiją. DI asistuota
+`main` versija aprašyta atskirame skyriuje dokumento pabaigoje.
 
-## 1. Įvadas
+## A. `v0.1` – mano savarankiškas darbas
+
+Ši versija sukurta savarankiškai, be DI pagalbos. Algoritmo kūrimas pradėtas
+nuo SHA-256 struktūros nukopijavimo, o vėliau jo komponentai buvo keičiami ir
+pritaikomi savam algoritmui.
+
+### A.1. Įvadas
 
 Maišos funkcija kintamo ilgio įvesties baitų seką paverčia fiksuoto ilgio
 reikšme. Ta pati baitų seka turi duoti tą patį rezultatą, o nedidelis įvesties
@@ -22,7 +25,7 @@ pakeitimas turėtų pakeisti didelę išvesties dalį.
 ribotumą. Nerastos kolizijos arba geras lavinos efektas savaime neįrodo
 kriptografinio saugumo.
 
-## 2. Kas pakeista lyginant su SHA-256
+### A.2. Kas pakeista lyginant su SHA-256
 
 Kūrimas pradėtas nuo SHA-256 struktūros, tačiau `v0.1` nėra tiesioginis
 standartinio algoritmo iškvietimas. Pagrindiniai pakeitimai yra šie:
@@ -79,7 +82,10 @@ maišymo, žodžių išplėtimo, pasirinkimo ir daugumos operacijos. Dėl to
 rezultatas nėra SHA-256 rezultatas ir nėra suderinamas su SHA-256
 realizacijomis.
 
-## 3. Paleidimo instrukcijos
+SHA-256 veikimo principą ir pagrindines algoritmo dalis mokiausi iš šio
+vaizdo įrašo: [SHA-256 paaiškinimas](https://www.youtube.com/watch?v=orIgy2MjqrA).
+
+### A.3. Paleidimo instrukcijos (`v0.11`)
 
 Reikalingas C++20 kompiliatorius:
 
@@ -99,8 +105,8 @@ Programos režimai:
 - `--file` failą skaito dvejetainiu režimu, todėl maišomi tikslūs jo baitai,
   o ne failo pavadinimas.
 - `--stdin` skaito tikslų dvejetainį standartinės įvesties srautą.
-- `--batch` naudojamas eksperimentų scenarijuje kelioms įvestims perduoti vienu
-  procesu.
+- eksperimentų scenarijus įvestis perduoda paketais per atskirą palyginimo
+  adapterį.
 
 UTF-8 tekstas apdorojamas kaip jo UTF-8 baitai. Tarpai, raidžių registras,
 eilučių pabaigos ir kiti baitai nėra normalizuojami. Neegzistuojantis arba
@@ -110,7 +116,7 @@ Išvestis yra 256 bitų, arba 32 baitų, maiša, užrašyta 64 mažosiomis
 šešioliktainėmis raidėmis. Pradiniai nuliai išsaugomi. Įvesties dydį praktiškai
 riboja turima operatyvioji atmintis.
 
-## 4. Testai
+### A.4. Testai
 
 Automatiniai testai tikrina:
 
@@ -127,14 +133,100 @@ Paleidimas:
 python3 -m unittest discover -s tests -v
 ```
 
-## 5. Reprodukavimo aplinka
+### A.5. Reprodukavimo aplinka
 
-Eksperimentų scenarijus yra `experiments/run_experiments.py`. Jis sugeneruoja
-visus duomenis ir juos išsaugo `results/` kataloge:
+Versijų palyginimo scenarijus yra `experiments/compare_versions.py`. Jis
+kompiliuoja abi versijas su vienodomis parinktimis ir išsaugo duomenis
+`results/` kataloge:
 
 ```bash
-python3 experiments/run_experiments.py
+python3 experiments/compare_versions.py
 ```
+
+## C. `v0.11` – patobulinta mano versija
+
+`v0.11` yra patobulinta `v0.1` versija, o ne DI asistuotos `main` šakos
+pakeitimas. Pati maišymo konstrukcija išsaugota, kad palyginimas parodytų
+įvesties ir programos sąsajos patobulinimų, o ne kito algoritmo, poveikį.
+
+Palyginti su `v0.1`, `v0.11`:
+
+- nebehashina visada tik `"hello"`, o priima `--text`, `--file` ir `--stdin`;
+- failus skaito dvejetainiu režimu, todėl nekeičiami jų baitai;
+- tikrina neteisingą režimą ir neperskaitomą failą, grąžindama aiškią klaidą;
+- vienodai pateikia 256 bitų rezultatą su pradiniais nuliais;
+- turi vienodą mašininę sąsają, kurią galima naudoti atkuriamiems bandymams.
+
+`v0.1` ir `v0.11` buvo kompiliuoti tais pačiais parametrais ir išbandyti su
+tais pačiais 1000 deterministiškai sugeneruotų įvesčių. Lavinos efektui vienas
+baitas kiekvienoje įvestyje pakeistas, o pakeistų išvesties bitų procentas
+skaičiuotas nuo 256 bitų.
+
+| Versija | Įvesčių skaičius | Vid. laikas (µs) | Lavinos efektas bitais (vid.) | Hex skirtumas (vid.) |
+|---|---:|---:|---:|---:|
+| `v0.1` | 1000 | 31.302 | 49.900% | 93.778% |
+| `v0.11` | 1000 | 31.113 | 49.900% | 93.778% |
+
+Pilni skaičiavimai pateikti faile
+[`results/v01_v011_comparison.csv`](results/v01_v011_comparison.csv), o juos
+atkartoja `python3 experiments/compare_versions.py`. Eksperimentų metu abiejų
+versijų maišymo rezultatai sutapo, nes `v0.11` keičia sąsają ir įvesties
+apdorojimą, bet nekeičia `v0.1` maišymo formulės.
+
+## B. `main` – DI asistuota versija
+
+Šis skyrius aprašo ne mano savarankišką `v0.1` darbą, o atskirą `main`
+šakos versiją, kuri buvo kuriama naudojant DI asistento pagalbą. `main`
+šakos `README.md` ir `src/main.cpp` yra šios versijos šaltiniai. Šių rezultatų
+negalima priskirti mano savarankiškai sukurtai `v0.1` versijai.
+
+### B.1. DI asistuotos versijos struktūra
+
+`main` versijoje įvestis papildoma `0x80`, nuliais ir 64 bitų ilgiu, tada
+apdorojama 64 baitų blokais. Ji naudoja kitokią nei `v0.1` būseną, pradines
+konstantas ir maišymo konstrukciją:
+
+- kiekvienas blokas paverčiamas į 16 žodžių mažosios baitų tvarkos formatu;
+- `mixBlock` atlieka 7 raundus po 8 vidinius atnaujinimus;
+- naudojamos rotacijos, XOR, sudėtis ir žodžių indeksavimo schemos;
+- galutinė būsena išvedama kaip 32 baitų, 256 bitų rezultatas.
+
+Tai yra DI asistuotos `main` versijos aprašas, o ne `v0.1` algoritmo
+paaiškinimas.
+
+### B.2. DI asistuotos versijos eksperimentai
+
+`main` versijai dokumentuoti buvo pateikti kolizijų, lavinos efekto, spartos
+ir kandidatų spėjimo eksperimentai. Ši versija taip pat buvo palyginta su MD5,
+SHA-1 ir SHA-256. Palyginimui naudotas tikslus
+`origin/main:src/main.cpp`, o ne `v0.1` šaltinis:
+
+| Algoritmas | Vid. laikas vienai maišai (µs) | Bitų skirtumas (vid.) | Hex skirtumas (vid.) |
+|---|---:|---:|---:|
+| `main` (DI) | 8.525 | 49.923% | 93.758% |
+| MD5 | 0.736 | 50.126% | 93.603% |
+| SHA-1 | 0.395 | 49.831% | 93.503% |
+| SHA-256 | 0.400 | 49.824% | 93.519% |
+
+Ši lentelė ir failai `results/standard_speed.csv` bei
+`results/standard_avalanche.csv` yra pažymėti kaip **DI asistuotos `main`
+versijos rezultatai**. Jie nėra mano savarankiškos `v0.1` versijos
+eksperimentų rezultatai.
+
+### B.3. Versijų palyginimas
+
+`v0.1` ir `main` nėra tas pats algoritmas:
+
+| Sritis | `v0.1` – mano darbas | `main` – DI asistuota versija |
+|---|---|---|
+| Kūrimas | Savarankiškai, be DI | Naudojant DI asistento pagalbą |
+| Pagrindinė konstrukcija | Pakeista SHA-256 struktūra | Atskirta `mixBlock` maišymo konstrukcija |
+| Išvestis | 256 bitai | 256 bitai |
+| Palyginimo rezultatai | Aprašyti A skyriuje | Aprašyti B.2 skyriuje |
+
+Šis atskyrimas leidžia aiškiai nurodyti, kurios idėjos, kodo dalys ir
+eksperimentai priklauso mano `v0.1`, o kurios buvo sukurtos DI asistuotoje
+`main` versijoje.
 
 Naudotos sąlygos:
 
@@ -151,9 +243,9 @@ Naudotos sąlygos:
 Visa ši informacija išsaugota faile
 [`results/metadata.txt`](results/metadata.txt).
 
-## 6. Eksperimentų rezultatai
+### A.6. Eksperimentų rezultatai
 
-### 6.1. Įvesties ir išvesties patikra
+#### A.6.1. Įvesties ir išvesties patikra
 
 `results/correctness.json` patvirtina, kad išbandytos tuščia, vieno baito,
 ASCII, UTF-8, eilučių pabaigos ir 256 baitų įvestys. Visais atvejais išvesties
@@ -167,7 +259,7 @@ Pavyzdžiai:
 | 1 (`a`) | 64 | `b753271708c8b3c4c2823aeaabfd3728f5a5c240f726fc0f80ceeb321f8e8d46` |
 | 7 (`ąžuolas`) | 64 | `5ccd4c32cf1bdb641ac839cc9f70fa3d4bc8de7ce0f5f1386e5e0c8165b9a081` |
 
-### 6.2. Kolizijų paieška
+#### A.6.2. Kolizijų paieška
 
 Kiekvienam ilgiui sugeneruota ir patikrinta 100 000 skirtingų ASCII porų.
 Papildomai tikrintas nedidelis struktūruotų įvesčių rinkinys.
@@ -184,7 +276,7 @@ Rezultatai saugomi [`results/collisions.csv`](results/collisions.csv). Kadangi
 maišos ilgis yra 256 bitai, tokio dydžio atsitiktiniame bandyme kolizijos
 neradimas yra tikėtinas ir neįrodo atsparumo kryptingai atakai.
 
-### 6.3. Lavinos efektas
+#### A.6.3. Lavinos efektas
 
 Iš viso patikrinta 100 000 porų, po 25 000 kiekvienam ilgiui. Kiekvienoje
 poroje pakeistas vienas ASCII simbolis kitu tos pačios abėcėlės simboliu.
@@ -205,7 +297,7 @@ statistikos – [`results/avalanche.csv`](results/avalanche.csv).
 Geras lavinos efektas gali egzistuoti ir konstrukcijoje, kuri turi kitų
 struktūrinių silpnybių, todėl šis eksperimentas nėra saugumo įrodymas.
 
-### 6.4. Spartos analizė
+#### A.6.4. Spartos analizė
 
 Naudotas fiksuotas sugeneruotas UTF-8 tekstas. Buvo matuojamos 1, 2, 4, 8, ir
 taip toliau eilučių ištraukos bei visas failas. Įvestis buvo paruošta prieš
@@ -225,7 +317,7 @@ grafikas – [`results/benchmark.svg`](results/benchmark.svg). Didėjant įvesti
 dydžiui laikas auga beveik tiesiškai, nes didėja apdorojamų 64 baitų blokų
 skaičius. Mažų įvesčių matavimus labiau veikia pastovios funkcijos sąnaudos.
 
-### 6.5. Spėjimas, vieša druska ir slaptas atsitiktinumas
+#### A.6.5. Spėjimas, vieša druska ir slaptas atsitiktinumas
 
 Tikslinė įvestis buvo `0420`, o kandidatų rinkinį sudarė visos eilutės nuo
 `0000` iki `9999`. Be druskos ir su vieša druska `VU-2026` rasta po vieną
@@ -243,7 +335,7 @@ neleidžia aklai pakartotinai naudoti iš anksto apskaičiuotų rezultatų kitai
 druskai. Slaptas atsitiktinis `r` padidintų paieškos erdvę tol, kol `r` nebūtų
 atskleistas; šiame darbe didelės `r` erdvės perrinkimas neatliekamas.
 
-### 6.6. Išvados
+#### A.6.6. Išvados
 
 Eksperimentai patvirtino, kad programa yra deterministinė, grąžina fiksuoto
 ilgio rezultatą, apdoroja skirtingo dydžio baitų sekas ir rodo gerą statistinį
@@ -256,10 +348,11 @@ rinkinyje. Realioms sistemoms turi būti naudojamos patikrintos kriptografinės
 konstrukcijos, o slaptažodžiams – specializuotos schemos, pavyzdžiui,
 `Argon2id`.
 
-### 6.7. Palyginimas su standartinėmis maišomis
+#### A.6.7. DI versijos palyginimas su standartinėmis maišomis
 
-Papildomai `v0.1` palyginta su standartinėmis MD5, SHA-1 ir SHA-256
-realizacijomis. Visos keturios funkcijos gavo tas pačias 1 000 atsitiktinių
+Papildomai `main` šakos DI versija palyginta su standartinėmis MD5, SHA-1 ir
+SHA-256 realizacijomis. Naudotas tikslus `origin/main:src/main.cpp`, todėl
+lyginama ne su `v0.1`, o su AI asistuota `main` realizacija. Visos keturios funkcijos gavo tas pačias 1 000 atsitiktinių
 ASCII įvesčių: po 250 įvesčių, kurių ilgis buvo 10, 100, 500 ir 1 000 baitų.
 Sparta matuota 5 kartus, o kiekvieno matavimo metu apdorotos visos įvestys.
 Lavinos efektui kiekvienoje poroje pakeistas vienas simbolis, o bitų skirtumas
@@ -273,17 +366,17 @@ python3 experiments/standard_compare.py
 
 | Algoritmas | Išvestis | Vid. laikas vienai maišai (µs) | Bitų skirtumas (vid.) | Hex skirtumas (vid.) |
 |---|---:|---:|---:|---:|
-| v0.1 | 256 bitai | žr. `standard_speed.csv` | žr. `standard_avalanche.csv` | žr. `standard_avalanche.csv` |
-| MD5 | 128 bitų | žr. `standard_speed.csv` | žr. `standard_avalanche.csv` | žr. `standard_avalanche.csv` |
-| SHA-1 | 160 bitų | žr. `standard_speed.csv` | žr. `standard_avalanche.csv` | žr. `standard_avalanche.csv` |
-| SHA-256 | 256 bitų | žr. `standard_speed.csv` | žr. `standard_avalanche.csv` | žr. `standard_avalanche.csv` |
+| main (DI) | 256 bitai | 8.525 | 49.923% | 93.758% |
+| MD5 | 128 bitų | 0.736 | 50.126% | 93.603% |
+| SHA-1 | 160 bitų | 0.395 | 49.831% | 93.503% |
+| SHA-256 | 256 bitai | 0.400 | 49.824% | 93.519% |
 
-Standartinės funkcijos skaičiuojamos Python `hashlib` bibliotekoje, o `v0.1`
-skaičiuojama iš šio projekto C++ realizacijos. Dėl skirtingų vykdymo aplinkų
+Standartinės funkcijos skaičiuojamos Python `hashlib` bibliotekoje, o `main (DI)`
+skaičiuojama iš `origin/main:src/main.cpp` C++ realizacijos. Dėl skirtingų vykdymo aplinkų
 spartos skaičiai yra orientaciniai, todėl svarbiausia išlaikyta vienoda įvesčių
 imtis ir vienodas matavimų skaičius. Palyginimas neįrodo `v0.1` saugumo.
 
-## 7. Rezultatų atkūrimas
+### A.7. Rezultatų atkūrimas
 
 Visi pradiniai matavimai, statistikos ir grafikas laikomi repozitorijoje:
 
