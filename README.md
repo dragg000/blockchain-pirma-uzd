@@ -151,7 +151,9 @@ Svarbiausias išmoktas principas yra tas, jog geras avalanche efektas arba stati
 
 ## 8. AI naudojimo žurnalas
 
-Šis projektas buvo sukurtas savarankiškai, be išorinių AI pagalbos. Visi sprendimai, eksperimentai ir rezultatai buvo gauti ir įvertinti rankiniu būdu, be automatizuoto generavimo sluoksnio.
+Ši projekto versija buvo kuriama naudojant DI asistento pagalbą. DI buvo
+naudojamas kodo, eksperimentų ir dokumentacijos rengimui, o gauti rezultatai
+buvo patikrinti kompiliuojant programą ir atliekant eksperimentus.
 
 ## 9. Santrauka
 
