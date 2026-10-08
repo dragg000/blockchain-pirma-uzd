@@ -3,8 +3,8 @@
 <text x="450.0" y="28" text-anchor="middle" font-size="20">Maišos skaičiavimo sparta</text>
 <line x1="90" y1="55" x2="90" y2="445" stroke="black"/>
 <line x1="90" y1="445" x2="870" y2="445" stroke="black"/>
-<polyline points="90.0,444.3 90.4,444.1 91.1,443.4 92.7,442.0 95.7,439.8 101.8,434.9 114.0,427.2 138.4,412.8 187.2,386.3 284.7,341.5 479.8,261.7 870.0,90.5 870.0,118.8" fill="none" stroke="#2457a6" stroke-width="2"/>
-<circle cx="90.0" cy="444.3" r="4" fill="#2457a6"/><circle cx="90.4" cy="444.1" r="4" fill="#2457a6"/><circle cx="91.1" cy="443.4" r="4" fill="#2457a6"/><circle cx="92.7" cy="442.0" r="4" fill="#2457a6"/><circle cx="95.7" cy="439.8" r="4" fill="#2457a6"/><circle cx="101.8" cy="434.9" r="4" fill="#2457a6"/><circle cx="114.0" cy="427.2" r="4" fill="#2457a6"/><circle cx="138.4" cy="412.8" r="4" fill="#2457a6"/><circle cx="187.2" cy="386.3" r="4" fill="#2457a6"/><circle cx="284.7" cy="341.5" r="4" fill="#2457a6"/><circle cx="479.8" cy="261.7" r="4" fill="#2457a6"/><circle cx="870.0" cy="90.5" r="4" fill="#2457a6"/><circle cx="870.0" cy="118.8" r="4" fill="#2457a6"/>
+<polyline points="90.0,398.7 90.4,400.4 91.1,401.6 92.7,402.6 95.7,400.6 101.8,400.6 114.0,395.3 138.4,386.0 187.2,367.6 284.7,329.0 479.8,252.5 870.0,92.6 870.0,90.5" fill="none" stroke="#2457a6" stroke-width="2"/>
+<circle cx="90.0" cy="398.7" r="4" fill="#2457a6"/><circle cx="90.4" cy="400.4" r="4" fill="#2457a6"/><circle cx="91.1" cy="401.6" r="4" fill="#2457a6"/><circle cx="92.7" cy="402.6" r="4" fill="#2457a6"/><circle cx="95.7" cy="400.6" r="4" fill="#2457a6"/><circle cx="101.8" cy="400.6" r="4" fill="#2457a6"/><circle cx="114.0" cy="395.3" r="4" fill="#2457a6"/><circle cx="138.4" cy="386.0" r="4" fill="#2457a6"/><circle cx="187.2" cy="367.6" r="4" fill="#2457a6"/><circle cx="284.7" cy="329.0" r="4" fill="#2457a6"/><circle cx="479.8" cy="252.5" r="4" fill="#2457a6"/><circle cx="870.0" cy="92.6" r="4" fill="#2457a6"/><circle cx="870.0" cy="90.5" r="4" fill="#2457a6"/>
 <text x="450.0" y="500" text-anchor="middle">Įvesties dydis baitais</text>
 <text x="20" y="260.0" text-anchor="middle" transform="rotate(-90 20 260.0)">Laikas vienai maišai (µs)</text>
 </svg>

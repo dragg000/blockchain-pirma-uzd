@@ -24,33 +24,29 @@ LENGTHS = (10, 100, 500, 1000)
 
 def build():
     BUILD.mkdir(exist_ok=True)
-    subprocess.run(
-        ["c++", "-std=c++20", "-O2", "-Wall", "-Wextra", "-pedantic",
-         "src/main.cpp", "-o", str(BINARY)],
-        cwd=ROOT, check=True,
+    wrapper = BUILD / "batch_wrapper.cpp"
+    wrapper.write_text(
+        '#define main original_main\n#include "../src/main.cpp"\n#undef main\n'
+        '#include <sstream>\n'
+        'int main() { std::string line; while (std::getline(std::cin, line)) { '
+        'std::vector<uint8_t> bytes; for (size_t i=0; i<line.size(); i += 2) '
+        'bytes.push_back(static_cast<uint8_t>(std::stoi(line.substr(i, 2), nullptr, 16))); '
+        'std::string input(bytes.begin(), bytes.end()); std::cout << toHex(hash(input)) << "\\n"; } }\n',
+        encoding="utf-8",
     )
-    subprocess.run(
-        ["c++", "-std=c++20", "-O2", "-Wall", "-Wextra", "-pedantic",
-         "src/benchmark.cpp", "-o", str(BENCHMARK)],
-        cwd=ROOT, check=True,
-    )
+    subprocess.run(["c++", "-std=c++20", "-O2", "-Wall", "-Wextra", "-pedantic",
+                    str(wrapper), "-o", str(BINARY)], cwd=BUILD, check=True)
 
 
 def hash_one(data):
-    result = subprocess.run(
-        [str(BINARY), "--stdin"], input=data, capture_output=True, check=True
-    )
-    return bytes.fromhex(result.stdout.strip().decode())
+    return hash_batch([data])[0]
 
 
 def hash_batch(items):
-    payload = bytearray()
-    for item in items:
-        payload += struct.pack("<Q", len(item))
-        payload += item
-    result = subprocess.run([str(BINARY), "--batch"], input=payload,
+    payload = "".join(item.hex() + "\n" for item in items).encode()
+    result = subprocess.run([str(BINARY)], input=payload,
                             capture_output=True, check=True)
-    return [result.stdout[i:i + 32] for i in range(0, len(result.stdout), 32)]
+    return [bytes.fromhex(line) for line in result.stdout.decode().splitlines()]
 
 
 def random_bytes(rng, length):
@@ -121,21 +117,23 @@ def benchmark():
     line_count = 1
     while line_count <= len(lines):
         data = "".join(lines[:line_count]).encode()
-        with tempfile.NamedTemporaryFile() as file:
-            file.write(data)
-            file.flush()
-            size, average, minimum, maximum, _ = map(
-                float, subprocess.check_output([str(BENCHMARK), file.name]).decode().split(",")
-            )
+        samples = []
+        for _ in range(5):
+            start = time.perf_counter_ns()
+            hash_batch([data])
+            samples.append((time.perf_counter_ns() - start) / 1000)
+        size, average = len(data), sum(samples) / len(samples)
+        minimum, maximum = min(samples), max(samples)
         rows.append((int(size), line_count, average, minimum, maximum))
         line_count *= 2
     data = corpus
-    with tempfile.NamedTemporaryFile() as file:
-        file.write(data)
-        file.flush()
-        size, average, minimum, maximum, _ = map(
-            float, subprocess.check_output([str(BENCHMARK), file.name]).decode().split(",")
-        )
+    samples = []
+    for _ in range(5):
+        start = time.perf_counter_ns()
+        hash_batch([data])
+        samples.append((time.perf_counter_ns() - start) / 1000)
+    size, average = len(data), sum(samples) / len(samples)
+    minimum, maximum = min(samples), max(samples)
     rows.append((int(size), len(lines), average, minimum, maximum))
     write_csv(OUT / "benchmark.csv",
               ["bytes", "lines", "average_us", "minimum_us", "maximum_us"], rows)

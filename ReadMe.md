@@ -172,8 +172,8 @@ skaičiuotas nuo 256 bitų.
 
 | Versija | Įvesčių skaičius | Vid. laikas (µs) | Lavinos efektas bitais (vid.) | Hex skirtumas (vid.) |
 |---|---:|---:|---:|---:|
-| `v0.1` | 1000 | 34.941 | 49.900% | 93.778% |
-| `v0.11` | 1000 | 34.235 | 49.977% | 93.906% |
+| `v0.1` | 1000 | 32.948 | 49.900% | 93.778% |
+| `v0.11` | 1000 | 32.239 | 49.977% | 93.906% |
 
 Pilni skaičiavimai pateikti faile
 [`results/v01_v011_comparison.csv`](results/v01_v011_comparison.csv), o juos
@@ -252,7 +252,8 @@ Naudotos sąlygos:
 - kompiliavimas: `-std=c++20 -O2 -Wall -Wextra -pedantic`;
 - atsitiktinių duomenų `seed`: `20261007`;
 - ASCII abėcėlė: `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,;:!?-_`;
-- spartos matavimai: 3 apšilimo kvietimai ir 5 matavimai;
+- spartos matavimai: 5 matavimai; įskaičiuotas vieno proceso paleidimas ir
+  standartinės įvesties perdavimas;
 - laikas matuojamas `steady_clock` mikrosekundėmis, neįtraukiant failo įvesties
   ir konsolės išvesties.
 
@@ -264,16 +265,17 @@ Visa ši informacija išsaugota faile
 #### A.6.1. Įvesties ir išvesties patikra
 
 `results/correctness.json` patvirtina, kad išbandytos tuščia, vieno baito,
-ASCII, UTF-8, eilučių pabaigos ir 256 baitų įvestys. Visais atvejais išvesties
-ilgis buvo 64 hex simboliai, o pakartotinis skaičiavimas davė tą pačią reikšmę.
+ASCII, UTF-8, eilučių pabaigos ir 256 baitų įvestys. Visais 9 atvejais
+išvesties ilgis buvo 64 hex simboliai, o pakartotinis skaičiavimas davė tą
+pačią reikšmę.
 
 Pavyzdžiai:
 
 | Įvesties baitų skaičius | Maišos ilgis | Maišos reikšmė |
 |---:|---:|---|
-| 0 | 64 | `56009b816c5b998746edf3cb5a49cc81c9c1181511a79186dedce2305cdb39f2` |
-| 1 (`a`) | 64 | `b753271708c8b3c4c2823aeaabfd3728f5a5c240f726fc0f80ceeb321f8e8d46` |
-| 7 (`ąžuolas`) | 64 | `5ccd4c32cf1bdb641ac839cc9f70fa3d4bc8de7ce0f5f1386e5e0c8165b9a081` |
+| 0 | 64 | `5bf99dd18d8278f0c3d390607dcb1aeba7b2a462183fb406e5796f86585a047a` |
+| 1 (`a`) | 64 | `c9824f483af8c3b7f83060996567cee0f1b740e445a51bd4890aeb3193c7d1f4` |
+| 7 (`ąžuolas`) | 64 | `a64d3dafae727f052469756fb2bd1294823280dee432e016797e8ab410e285c0` |
 
 #### A.6.2. Kolizijų paieška
 
@@ -299,10 +301,10 @@ poroje pakeistas vienas ASCII simbolis kitu tos pačios abėcėlės simboliu.
 
 | Ilgis | Bitų skirtumas min. | Bitų skirtumas maks. | Bitų skirtumas vid. | Hex skirtumas min. | Hex skirtumas maks. | Hex skirtumas vid. |
 |---:|---:|---:|---:|---:|---:|---:|
-| 10 | 37.109% | 62.109% | 49.965% | 76.563% | 100.000% | 93.734% |
-| 100 | 36.719% | 62.109% | 50.029% | 78.125% | 100.000% | 93.769% |
-| 500 | 37.891% | 62.891% | 50.011% | 79.688% | 100.000% | 93.777% |
-| 1 000 | 37.500% | 61.719% | 50.012% | 79.688% | 100.000% | 93.747% |
+| 10 | 36.719% | 62.891% | 49.977% | 78.125% | 100.000% | 93.748% |
+| 100 | 37.500% | 61.719% | 50.032% | 79.688% | 100.000% | 93.750% |
+| 500 | 37.891% | 62.500% | 50.003% | 76.563% | 100.000% | 93.749% |
+| 1 000 | 37.109% | 62.500% | 50.010% | 78.125% | 100.000% | 93.756% |
 
 Vidutinis bitų skirtumas yra apie 50 %, o hex simbolių skirtumas – apie
 93,75 %. Tai atitinka orientacines nepriklausomų atsitiktinių išvesčių
@@ -317,16 +319,18 @@ struktūrinių silpnybių, todėl šis eksperimentas nėra saugumo įrodymas.
 
 Naudotas fiksuotas sugeneruotas UTF-8 tekstas. Buvo matuojamos 1, 2, 4, 8, ir
 taip toliau eilučių ištraukos bei visas failas. Įvestis buvo paruošta prieš
-matavimą, atlikti 3 apšilimo ir 5 matavimo kvietimai.
+matavimą, atlikti 5 matavimo kvietimai. Šio pakartojimo lentelėje įskaičiuotas
+vieno proceso paleidimas ir standartinės įvesties perdavimas, todėl skaičiai
+nėra tiesiogiai lygintini su ankstesne lentelės versija.
 
 | Baitai | Eilutės | Vidurkis (µs) | Min. (µs) | Maks. (µs) |
 |---:|---:|---:|---:|---:|
-| 85 | 1 | 6.175 | 6.125 | 6.292 |
-| 680 | 8 | 25.892 | 25.250 | 27.958 |
-| 5 440 | 64 | 151.367 | 151.166 | 151.709 |
-| 43 520 | 512 | 879.250 | 855.125 | 922.209 |
-| 87 040 | 1 024 | 1 557.200 | 1 495.420 | 1 604.920 |
-| 174 080 | 2 048 | 2 771.390 | 2 594.620 | 2 914.620 |
+| 85 | 1 | 1 675.875 | 1 549.833 | 1 784.916 |
+| 680 | 8 | 1 532.908 | 1 469.667 | 1 614.250 |
+| 5 440 | 64 | 1 795.792 | 1 753.291 | 1 836.792 |
+| 43 520 | 512 | 4 194.258 | 4 058.666 | 4 413.250 |
+| 87 040 | 1 024 | 6 960.150 | 6 809.958 | 7 087.083 |
+| 174 080 | 2 048 | 12 746.400 | 12 401.417 | 13 133.166 |
 
 Pilna lentelė pateikta [`results/benchmark.csv`](results/benchmark.csv), o
 grafikas – [`results/benchmark.svg`](results/benchmark.svg). Didėjant įvesties
@@ -341,8 +345,8 @@ sutampantį kandidatą:
 
 | Režimas | Kandidatų | Sutapę kandidatai | Laikas (s) |
 |---|---:|---|---:|
-| Be druskos | 10 000 | `0420` | 0.026895 |
-| Vieša druska `VU-2026` | 10 000 | `0420` | 0.027444 |
+| Be druskos | 10 000 | `0420` | 0.048653 |
+| Vieša druska `VU-2026` | 10 000 | `0420` | 0.051423 |
 
 Rezultatai saugomi [`results/preimage.csv`](results/preimage.csv). Mažas
 kandidatų rinkinys gali būti perrenkamas net ir tada, kai maišos išvestis atrodo
@@ -407,6 +411,8 @@ Visi pradiniai matavimai, statistikos ir grafikas laikomi repozitorijoje:
 - [`results/standard_avalanche.csv`](results/standard_avalanche.csv)
 - [`results/metadata.txt`](results/metadata.txt)
 
+Šis pakartojimas apėmė 9 correctness įvesčių, 100 000 kolizijų porų kiekvienam
+ilgiui, 100 000 lavinos porų, spartos matavimus ir 10 000 kandidatų spėjimą.
 Eksperimentai atkuriami viena komanda:
 
 ```bash
