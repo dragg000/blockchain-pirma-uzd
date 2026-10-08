@@ -1,252 +1,274 @@
-#include <array>
-#include <bit>
-#include <cstdint>
-#include <fstream>
-#include <iomanip>
-#include <cstring>
-#include <iterator>
 #include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <string>
 #include <vector>
+#include <bitset>
+#include <array>
+#include <iomanip>
+#include <cmath>
+#include <cstdint>
+#include <bit>
 
-namespace {
-
-using Bytes = std::vector<std::uint8_t>;
-using State = std::array<std::uint32_t, 8>;
-
-std::uint32_t rotl(std::uint32_t value, unsigned shift)
+void toBinary(const std::string& in, std::vector<uint8_t>& out)
 {
-    return std::rotl(value, static_cast<int>(shift));
-}
-
-std::uint32_t rotr(std::uint32_t value, unsigned shift)
-{
-    return std::rotr(value, static_cast<int>(shift));
-}
-
-State initialState()
-{
-    return {
-        0x452821E6u, 0x38D01377u, 0xBE5466CFu, 0x34E90C6Cu,
-        0xC0AC29B7u, 0xC97C50DDu, 0x3F84D5B5u, 0xB5470917u
-    };
-}
-
-std::array<std::uint32_t, 64> roundConstants()
-{
-    return {
-        0x243F6A88u, 0x85A308D3u, 0x13198A2Eu, 0x03707344u,
-        0xA4093822u, 0x299F31D0u, 0x082EFA98u, 0xEC4E6C89u,
-        0x452821E6u, 0x38D01377u, 0xBE5466CFu, 0x34E90C6Cu,
-        0xC0AC29B7u, 0xC97C50DDu, 0x3F84D5B5u, 0xB5470917u,
-        0x9216D5D9u, 0x8979FB1Bu, 0xD1310BA6u, 0x98DFB5ACu,
-        0x2FFD72DBu, 0xD01ADFB7u, 0xB8E1AFEDu, 0x6A267E96u,
-        0xBA7C9045u, 0xF12C7F99u, 0x24A19947u, 0xB3916CF7u,
-        0x0801F2E2u, 0x858EFC16u, 0x636920D8u, 0x71574E69u,
-        0xA458FEA3u, 0xF4933D7Eu, 0x0D95748Fu, 0x728EB658u,
-        0x718BCD58u, 0x82154AEEu, 0x7B54A41Du, 0xC25A59B5u,
-        0x9C30D539u, 0x2AF26013u, 0xC5D1B023u, 0x286085F0u,
-        0xCA417918u, 0xB8DB38EFu, 0x8E79DCB0u, 0x603A180Eu,
-        0x6C9E0E8Bu, 0xB01E8A3Eu, 0xD71577C1u, 0xBD314B27u,
-        0x78AF2FDAu, 0x55605C60u, 0xE65525F3u, 0xAA55AB94u,
-        0x57489862u, 0x63E81440u, 0x55CA396Au, 0x2AAB10B6u,
-        0xB4CC5C34u, 0x1141E8CEu, 0xA15486AFu, 0x7C72E993u
-    };
-}
-
-void pad(Bytes& bytes)
-{
-    const std::uint64_t bitLength = static_cast<std::uint64_t>(bytes.size()) * 8u;
-    bytes.push_back(0x80u);
-    while (bytes.size() % 64u != 56u)
-        bytes.push_back(0u);
-    for (int shift = 56; shift >= 0; shift -= 8)
-        bytes.push_back(static_cast<std::uint8_t>(bitLength >> shift));
-}
-
-std::uint32_t readWord(const Bytes& bytes, std::size_t offset)
-{
-    return (static_cast<std::uint32_t>(bytes[offset]) << 24u)
-         | (static_cast<std::uint32_t>(bytes[offset + 1]) << 16u)
-         | (static_cast<std::uint32_t>(bytes[offset + 2]) << 8u)
-         | static_cast<std::uint32_t>(bytes[offset + 3]);
-}
-
-std::uint32_t sigmaZero(std::uint32_t value)
-{
-    return rotl(value, 7) ^ rotl(value, 13) ^ (value << 5)
-         ^ ~(rotl(value, 7) ^ rotl(value, 13));
-}
-
-std::uint32_t sigmaOne(std::uint32_t value)
-{
-    return rotr(value, 8) ^ rotr(value, 19) ^ (value >> 5);
-}
-
-std::uint32_t bigSigmaZero(std::uint32_t value)
-{
-    return rotl(value, 3) ^ rotl(value, 14) ^ rotl(value, 25);
-}
-
-std::uint32_t bigSigmaOne(std::uint32_t value)
-{
-    return rotl(value, 5) ^ rotl(value, 11) ^ rotl(value, 27);
-}
-
-std::uint32_t choose(std::uint32_t a, std::uint32_t b, std::uint32_t c,
-                     std::uint32_t e, std::uint32_t f, std::uint32_t g)
-{
-    std::uint32_t result = 0;
-    for (unsigned bit = 0; bit < 32; ++bit) {
-        const bool even = bit % 2u == 0u;
-        const std::uint32_t x = (even ? a : e) >> bit & 1u;
-        const std::uint32_t y = (even ? b : f) >> bit & 1u;
-        const std::uint32_t z = (even ? c : g) >> bit & 1u;
-        result |= ((x & y) ^ ((x ^ 1u) & z)) << bit;
+    for (std::size_t i = 0; i < in.size(); ++i)
+    {
+        uint8_t tmp = in[i];
+        out.push_back(tmp);
     }
+}
+
+void pad(std::vector<uint8_t>& in)
+{
+    uint64_t len = in.size();
+
+    in.push_back(0x80);
+
+    while(in.size() % 64 != 56)
+        in.push_back(0x00);
+    for (int i = 7; i >= 0; --i)
+        in.push_back(static_cast<uint8_t>(len >> (i * 8)));
+}
+
+std::array<uint32_t, 8> computeHashValues()
+{
+    // Paprastai SHA-256 naudoja pirmuosius 8 pirminius skaicius: 2-19
+    // Cia naudojami kiti pirminiai skaiciai: 23-53
+    const std::array<double, 8> primes = {23, 29, 31, 37, 41, 43, 47, 53};
+
+    std::array<uint32_t, 8> hash;
+
+    for (std::size_t i = 0; i < primes.size(); i++)
+    {
+        double intPart;
+        double frac = std::modf(std::sqrt(primes[i]), &intPart);
+
+        hash[i] = static_cast<uint32_t>(std::floor(frac * 4294967296.0));
+    }
+
+    return hash;
+}
+
+std::array<uint32_t, 64> computeRoundConstants()
+{
+    const std::array<uint32_t, 64> primes = {
+        2,   3,   5,   7,  11,  13,  17,  19,
+        23,  29,  31,  37,  41,  43,  47,  53,
+        59,  61,  67,  71,  73,  79,  83,  89,
+        97, 101, 103, 107, 109, 113, 127, 131,
+        137, 139, 149, 151, 157, 163, 167, 173,
+        179, 181, 191, 193, 197, 199, 211, 223,
+        227, 229, 233, 239, 241, 251, 257, 263,
+        269, 271, 277, 281, 283, 293, 307, 311
+    };
+
+    std::array<uint32_t, 64> k;
+
+    for (std::size_t i = 0; i < primes.size(); i++)
+    {
+        double intPart;
+        double frac = std::modf(std::cbrt(static_cast<double>(primes[i])), &intPart);
+
+        k[i] = static_cast<uint32_t>(std::floor(frac * 4294967296.0));
+    }
+
+    return k;
+}
+
+
+inline uint32_t rotl(uint32_t x, int n) { return (x << n) | (x >> (32 - n));}
+
+inline uint32_t xnor(uint32_t x, uint32_t y){ return ~(x ^ y); }
+
+inline uint32_t rotr(uint32_t x, int n) { return (x >> n) | (x << (32 - n)); }
+
+inline uint32_t bigSigmaZero(uint32_t x) { return rotl(x, 3) ^ rotl(x, 14) ^ rotl(x, 25); }
+
+inline uint32_t bigSigmaOne(uint32_t x) { return rotl(x, 5) ^ rotl(x, 11) ^ rotl(x, 27); }
+
+
+uint32_t sigmaZero(uint32_t messageBlock)
+{
+    uint32_t a = messageBlock;
+    uint32_t b = messageBlock;
+    uint32_t c = messageBlock;
+    a = rotl(a, 7);
+
+    b = rotl(b, 13);
+
+    c = c << 5;
+
+    //XNOR (ekvivalencija)
+    uint32_t result = xnor(xnor(a, b), c);
     return result;
 }
 
-std::uint32_t majority(std::uint32_t a, std::uint32_t b, std::uint32_t c,
-                       std::uint32_t d, std::uint32_t e)
+uint32_t sigmaOne(uint32_t messageBlock)
 {
-    std::uint32_t result = 0;
-    for (unsigned bit = 0; bit < 32; ++bit) {
-        const unsigned count = ((a >> bit) & 1u) + ((b >> bit) & 1u)
-                             + ((c >> bit) & 1u) + ((d >> bit) & 1u)
-                             + ((e >> bit) & 1u);
-        result |= (count >= 3u ? 1u : 0u) << bit;
-    }
+    uint32_t a = messageBlock;
+    uint32_t b = messageBlock;
+    uint32_t c = messageBlock;
+    a = rotr(a, 8);
+
+    b = rotr(b, 19);
+
+    c = c >> 5;
+
+//XOR naudojamas
+    uint32_t result = a ^ b ^ c;
     return result;
 }
 
-State compress(const Bytes& padded)
+std::vector<uint32_t> messageSchedule(std::vector<uint8_t>& vec, int blockCount)
 {
-    State state = initialState();
-    const auto constants = roundConstants();
+    // Zinute suskirstoma i 32 bitu blokus
+    std::vector<uint32_t> messageBlocks(blockCount * 16);
 
-    for (std::size_t block = 0; block < padded.size(); block += 64) {
-        std::array<std::uint32_t, 64> words{};
-        for (std::size_t i = 0; i < 16; ++i)
-            words[i] = readWord(padded, block + i * 4);
-        for (std::size_t i = 16; i < words.size(); ++i)
-            words[i] = sigmaOne(words[i - 3]) + words[i - 4]
-                     + sigmaZero(words[i - 10]) + words[i - 16];
+    for (std::size_t i = 0; i < messageBlocks.size(); i++)
+    {
+        messageBlocks[i] = (uint32_t(vec[4 * i])     << 24) |
+                           (uint32_t(vec[4 * i + 1]) << 16) |
+                           (uint32_t(vec[4 * i + 2]) << 8)  |
+                            uint32_t(vec[4 * i + 3]);
+    }
 
-        std::uint32_t a = state[0], b = state[1], c = state[2], d = state[3];
-        std::uint32_t e = state[4], f = state[5], g = state[6], h = state[7];
+    // Pakeistos sigma0 ir sigma1 funkcijos
+    // Wt = sigmaOne(Wt-3) + Wt-4 + sigmaZero(Wt-10) + Wt-16
+    std::vector<uint32_t> W(blockCount * 64);
 
-        for (std::size_t i = 0; i < words.size(); ++i) {
-            const std::uint32_t t1 = h + bigSigmaOne(e)
-                + choose(a, b, c, e, f, g) + constants[i] + words[i];
-            const std::uint32_t t2 = bigSigmaZero(a) + majority(a, b, c, d, e);
+    for (int i = 0; i < blockCount; i++)
+    {
+        uint32_t* w = &W[i * 64];
+        const uint32_t* m = &messageBlocks[i * 16];
+
+        for (int t = 0; t < 16; t++)
+            w[t] = m[t];
+
+        for (int t = 16; t < 64; t++)
+            w[t] = sigmaOne(w[t - 3]) + w[t - 4] + sigmaZero(w[t - 10]) + w[t - 16];
+    }
+
+    return W;
+}
+
+uint32_t choose(uint32_t a, uint32_t b, uint32_t c, uint32_t e, uint32_t f, uint32_t g)
+{
+    // Naudojami 6 argumentai
+    uint32_t result = 0;
+
+    for (std::size_t i = 0; i < 32; i++)
+    {
+        uint32_t x, y, z;
+
+        if (i % 2 == 0)
+        {
+            // Naudojami a, b ir c
+            x = (a >> i) & 1;
+            y = (b >> i) & 1;
+            z = (c >> i) & 1;
+        }
+        else
+        {
+            // Naudojami e, f ir g
+            x = (e >> i) & 1;
+            y = (f >> i) & 1;
+            z = (g >> i) & 1;
+        }
+
+        uint32_t bit = ((x & y) ^ (~x & z)) & 1;
+
+        result |= bit << i;
+    }
+
+    return result;
+}
+
+uint32_t majority(uint32_t a, uint32_t b, uint32_t c, uint32_t e, uint32_t f)
+{
+    // Daugumos funkcijai naudojami 5 argumentai
+    uint32_t result = 0;
+
+    for (std::size_t i = 0; i < 32; i++)
+    {
+        uint32_t count = ((a >> i) & 1) + ((b >> i) & 1) + ((c >> i) & 1)
+                        + ((e >> i) & 1) + ((f >> i) & 1);
+
+        uint32_t bit = (count >= 3) ? 1 : 0;
+        result |= bit << i;
+    }
+
+    return result;
+}
+
+std::array<uint32_t, 8> compression(const std::vector<uint32_t>& W, int blockCount)
+{
+    std::array<uint32_t, 8> H = computeHashValues();
+    const std::array<uint32_t, 64> K = computeRoundConstants();
+
+    for (int blk = 0; blk < blockCount; blk++)
+    {
+        const uint32_t* w = &W[blk * 64];
+
+        uint32_t a = H[0], b = H[1], c = H[2], d = H[3];
+        uint32_t e = H[4], f = H[5], g = H[6], h = H[7];
+
+        for (int t = 0; t < 64; t++)
+        {
+            uint32_t T1 = h + bigSigmaOne(e) + choose(a, b, c, e, f, g) + K[t] + w[t];
+
+            uint32_t T2 = bigSigmaZero(a) + majority(a, b, c, d, e);
+
             h = g;
             g = f;
             f = e;
-            e = d + t1;
+            e = d + T1;
             d = c;
             c = b;
             b = a;
-            a = t1 + t2;
+            a = T1 + T2;
         }
 
-        state[0] += a;
-        state[1] += b;
-        state[2] += c;
-        state[3] += d;
-        state[4] += e;
-        state[5] += f;
-        state[6] += g;
-        state[7] += h;
+        H[0] += a; H[1] += b; H[2] += c; H[3] += d;
+        H[4] += e; H[5] += f; H[6] += g; H[7] += h;
     }
-    return state;
+
+    return H;
 }
 
-Bytes hashBytes(const Bytes& input)
+
+
+std::vector<uint8_t> hash(const std::string& input)
 {
-    Bytes padded = input;
-    pad(padded);
-    const State state = compress(padded);
-    Bytes digest;
+    std::vector<uint8_t> bytes;
+    toBinary(input, bytes);
+    pad(bytes);
+
+    int blockCount = static_cast<int>(bytes.size() / 64);
+
+    std::vector<uint32_t> W = messageSchedule(bytes, blockCount);
+    std::array<uint32_t, 8> H = compression(W, blockCount);
+
+    std::vector<uint8_t> digest;
     digest.reserve(32);
-    for (std::uint32_t word : state) {
-        digest.push_back(static_cast<std::uint8_t>(word >> 24));
-        digest.push_back(static_cast<std::uint8_t>(word >> 16));
-        digest.push_back(static_cast<std::uint8_t>(word >> 8));
-        digest.push_back(static_cast<std::uint8_t>(word));
+
+    for (uint32_t word : H)
+    {
+        digest.push_back(static_cast<uint8_t>(word >> 24));
+        digest.push_back(static_cast<uint8_t>(word >> 16));
+        digest.push_back(static_cast<uint8_t>(word >> 8));
+        digest.push_back(static_cast<uint8_t>(word));
     }
+
     return digest;
+
 }
 
-std::string toHex(const Bytes& bytes)
+int main()
 {
-    std::ostringstream output;
-    output << std::hex << std::setfill('0');
-    for (std::uint8_t byte : bytes)
-        output << std::setw(2) << static_cast<unsigned>(byte);
-    return output.str();
-}
 
-Bytes readAll(std::istream& input)
-{
-    return Bytes(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>());
-}
+    std::vector<uint8_t> d = hash("hello");
 
-Bytes readFile(const std::string& path)
-{
-    std::ifstream input(path, std::ios::binary);
-    if (!input)
-        throw std::runtime_error("Nepavyko atidaryti failo: " + path);
-    return readAll(input);
-}
+    for (uint8_t byte : d)
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << int(byte);
+    std::cout << '\n';
 
-void printUsage(const char* program)
-{
-    std::cerr << "Naudojimas:\n"
-              << "  " << program << " --text TEKSTAS\n"
-              << "  " << program << " --file KELIAS\n"
-              << "  " << program << " --stdin\n"
-              << "  " << program << " --batch\n";
-}
-
-int runBatch()
-{
-    std::uint64_t length = 0;
-    while (std::cin.read(reinterpret_cast<char*>(&length), sizeof(length))) {
-        Bytes input(length);
-        if (!std::cin.read(reinterpret_cast<char*>(input.data()), static_cast<std::streamsize>(length)))
-            throw std::runtime_error("Nebaigtas paketinis įrašas.");
-        const Bytes digest = hashBytes(input);
-        std::cout.write(reinterpret_cast<const char*>(digest.data()),
-                        static_cast<std::streamsize>(digest.size()));
-    }
     return 0;
 }
-
-}
-
-#ifndef HASH_GENERATOR_LIBRARY
-int main(int argc, char* argv[])
-{
-    try {
-        if (argc == 2 && std::string(argv[1]) == "--stdin")
-            std::cout << toHex(hashBytes(readAll(std::cin))) << '\n';
-        else if (argc == 2 && std::string(argv[1]) == "--batch")
-            return runBatch();
-        else if (argc == 3 && std::string(argv[1]) == "--text")
-            std::cout << toHex(hashBytes(Bytes(argv[2], argv[2] + std::strlen(argv[2])))) << '\n';
-        else if (argc == 3 && std::string(argv[1]) == "--file")
-            std::cout << toHex(hashBytes(readFile(argv[2]))) << '\n';
-        else {
-            printUsage(argv[0]);
-            return 2;
-        }
-    } catch (const std::exception& error) {
-        std::cerr << "Klaida: " << error.what() << '\n';
-        return 1;
-    }
-    return 0;
-}
-#endif
