@@ -164,8 +164,8 @@ skaičiuotas nuo 256 bitų.
 
 | Versija | Įvesčių skaičius | Vid. laikas (µs) | Lavinos efektas bitais (vid.) | Hex skirtumas (vid.) |
 |---|---:|---:|---:|---:|
-| `v0.1` | 1000 | 31.792 | 49.900% | 93.778% |
-| `v0.11` | 1000 | 32.865 | 49.900% | 93.778% |
+| `v0.1` | 1000 | 33.947 | 49.900% | 93.778% |
+| `v0.11` | 1000 | 32.214 | 49.900% | 93.778% |
 
 Pilni skaičiavimai pateikti faile
 [`results/v01_v011_comparison.csv`](results/v01_v011_comparison.csv), o juos
