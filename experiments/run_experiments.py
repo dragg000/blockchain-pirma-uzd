@@ -95,33 +95,6 @@ def make_svg(path, title, x_label, y_label, points):
     path.write_text(svg, encoding="utf-8")
 
 
-def make_histogram_svg(path, counts):
-    width, height = 900, 520
-    left, right, top, bottom = 70, 30, 45, 70
-    plot_w, plot_h = width - left - right, height - top - bottom
-    maximum = max(counts.values()) or 1
-    bars = []
-    bar_width = plot_w / len(counts)
-    for index, (bits, count) in enumerate(sorted(counts.items())):
-        x = left + index * bar_width
-        bar_height = count / maximum * plot_h
-        y = top + plot_h - bar_height
-        bars.append(
-            f'<rect x="{x:.2f}" y="{y:.2f}" width="{max(bar_width - 0.4, 0):.2f}" '
-            f'height="{bar_height:.2f}" fill="#2457a6"/>'
-        )
-    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}">
-<rect width="100%" height="100%" fill="white"/>
-<text x="{width/2}" y="28" text-anchor="middle" font-size="20">Lavinos efekto bitų histograma</text>
-<line x1="{left}" y1="{top}" x2="{left}" y2="{top+plot_h}" stroke="black"/>
-<line x1="{left}" y1="{top+plot_h}" x2="{left+plot_w}" y2="{top+plot_h}" stroke="black"/>
-{''.join(bars)}
-<text x="{width/2}" y="{height-20}" text-anchor="middle">Pakeistų bitų skaičius</text>
-<text x="20" y="{height/2}" text-anchor="middle" transform="rotate(-90 20 {height/2})">Porų skaičius</text>
-</svg>
-"""
-    path.write_text(svg, encoding="utf-8")
-
 
 def correctness():
     inputs = [
@@ -199,7 +172,6 @@ def collisions():
 def avalanche():
     rng = random.Random(SEED)
     rows = []
-    histogram = [0] * 257
     for length in LENGTHS:
         bit_values, hex_values = [], []
         inputs = []
@@ -220,18 +192,11 @@ def avalanche():
             hex_percent = hex_digits / 64 * 100
             bit_values.append(bit_percent)
             hex_values.append(hex_percent)
-            histogram[bits] += 1
         rows.append((length, min(bit_values), max(bit_values), sum(bit_values) / len(bit_values),
                      min(hex_values), max(hex_values), sum(hex_values) / len(hex_values)))
     write_csv(OUT / "avalanche.csv",
               ["length", "bit_min_pct", "bit_max_pct", "bit_average_pct",
                "hex_min_pct", "hex_max_pct", "hex_average_pct"], rows)
-    write_csv(OUT / "avalanche_histogram.csv", ["different_bits", "count"],
-              [(i, count) for i, count in enumerate(histogram) if count])
-    make_histogram_svg(
-        OUT / "avalanche_histogram.svg",
-        {i: count for i, count in enumerate(histogram) if count},
-    )
 
 
 def preimage():

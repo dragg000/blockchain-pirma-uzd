@@ -236,11 +236,8 @@ poroje pakeistas vienas ASCII simbolis kitu tos pačios abėcėlės simboliu.
 Vidutinis bitų skirtumas yra apie 50 %, o hex simbolių skirtumas – apie
 93,75 %. Tai atitinka orientacines nepriklausomų atsitiktinių išvesčių
 reikšmes. Bitų skirtumo histograma pateikta
-![Lavinos efekto bitų histograma](results/avalanche_histogram.svg)
-
-Žali histogramo duomenys pateikti
-[`results/avalanche_histogram.csv`](results/avalanche_histogram.csv), o visos
-statistikos – [`results/avalanche.csv`](results/avalanche.csv).
+Visos lavinos efekto statistikos pateiktos
+[`results/avalanche.csv`](results/avalanche.csv).
 
 Geras lavinos efektas gali egzistuoti ir konstrukcijoje, kuri turi kitų
 struktūrinių silpnybių, todėl šis eksperimentas nėra saugumo įrodymas.
@@ -310,8 +307,6 @@ Visi pradiniai matavimai, statistikos ir grafikas laikomi repozitorijoje:
 - [`results/benchmark.svg`](results/benchmark.svg)
 - [`results/collisions.csv`](results/collisions.csv)
 - [`results/avalanche.csv`](results/avalanche.csv)
-- [`results/avalanche_histogram.csv`](results/avalanche_histogram.csv)
-- [`results/avalanche_histogram.svg`](results/avalanche_histogram.svg)
 - [`results/preimage.csv`](results/preimage.csv)
 - [`results/metadata.txt`](results/metadata.txt)
 
